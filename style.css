@@ -1,4 +1,4 @@
- * {
+* {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -213,8 +213,8 @@
             /* Ajusta os botões para virarem ícones de menu inferior */
             .sidebar button {
                 text-align: center;
-                padding: 5px;
-                font-size: 12px;
+                padding: 2px;
+                font-size: 11px;
                 height: 100%;
                 display: flex;
                 align-items: center;

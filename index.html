@@ -8,19 +8,21 @@
 
     <link rel="icon" type="image/png" href="fogao.png">
     <link rel="apple-touch-icon" href="fogao.png">
-
+    
 </head>
 <body>
 
     <!-- Sidebar Navigation -->
     <div class="sidebar">
-    <h2>Estoque Pro</h2>
-    <button class="tab-link active" onclick="openTab(event, 'dashboard')">📊 Painel</button>
-    <button class="tab-link" onclick="openTab(event, 'cadastro')">📦 Cadastrar</button>
-    <button class="tab-link" onclick="openTab(event, 'compras')">📥 Compra</button>
-    <button class="tab-link" onclick="openTab(event, 'vendas')">📤 Venda</button>
-    <button class="tab-link" onclick="openTab(event, 'configuracao')" style="margin-top: auto; background-color: #334155; color: #38bdf8;">⚙️ Config</button>
-</div>
+        <h2>Estoque Pro</h2>
+        <button class="tab-link active" onclick="openTab(event, 'dashboard')">📊 Painel</button>
+        <button class="tab-link" onclick="openTab(event, 'cadastro')">📦 Cadastrar</button>
+        <button class="tab-link" onclick="openTab(event, 'compras')">📥 Compra</button>
+        <button class="tab-link" onclick="openTab(event, 'vendas')">📤 Venda</button>
+        <button class="tab-link" onclick="openTab(event, 'configuracao')" style="margin-top: auto; background-color: #334155; color: #38bdf8;">⚙️ Config</button>
+        
+        <button onclick="abrirPlanilhaBancoDeDados()" style="background-color: #15803d; color: #fff; font-weight: 600;">🟢 Ver Planilha</button>
+    </div>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -30,19 +32,25 @@
         <h1>Configuração do Banco de Dados</h1>
     </header>
     <div class="card">
-        <h2>Vincular Google Apps Script</h2>
+        <h2>Vincular Google Sheets</h2>
         <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">
-            Insira abaixo a URL gerada na implantação do seu Script. Este link ficará guardado apenas neste navegador de forma segura.
+            Insira abaixo os links correspondentes para o funcionamento do seu painel e acesso rápido.
         </p>
-            <form onsubmit="salvarConfiguracao(event)">
-                <div class="form-group">
-                    <label for="input-url-api">URL do Web App (Google Script)</label>
-                    <input type="text" id="input-url-api" placeholder="https://script.google.com/macros/s/.../exec" required>
-                </div>
-                <button type="submit" class="btn-submit" style="background-color: #10b981;">Salvar Link de Acesso</button>
-            </form>
-             </div>
-        </div>
+        <form onsubmit="salvarConfiguracao(event)">
+            <div class="form-group">
+                <label for="input-url-api">URL do Web App (Google Script)</label>
+                <input type="text" id="input-url-api" placeholder="https://script.google.com/macros/s/.../exec" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="input-url-planilha">URL Direta da Planilha do Google</label>
+                <input type="text" id="input-url-planilha" placeholder="https://docs.google.com/spreadsheets/d/.../edit">
+            </div>
+            
+            <button type="submit" class="btn-submit" style="background-color: #10b981;">Salvar Configurações</button>
+        </form>
+    </div>
+</div>
         
         <!-- TAB 1: Dashboard / Controle Geral -->
         <div id="dashboard" class="tab-content active">

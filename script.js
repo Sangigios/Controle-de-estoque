@@ -1,6 +1,7 @@
-// CONFIGURAÇÃO: Insira aqui a URL gerada na implantação do seu Google Apps Script
+ // CONFIGURAÇÃO: Insira aqui a URL gerada na implantação do seu Google Apps Script
         // Removemos a constante fixa antiga. Agora a URL será dinâmica.
 let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
+let URL_PLANILHA = localStorage.getItem('LINK_PLANILHA_URL') || ""; // <--- Nova variável
 
 // Sistema de alternância de abas front-end
 function openTab(evt, tabName) {
@@ -35,41 +36,57 @@ function openTab(evt, tabName) {
     }
 }
 
-// Define as configurações iniciais ao carregar a página
+// Atualize a função de inicialização da página
 window.addEventListener('DOMContentLoaded', () => {
     const hoje = new Date().toISOString().split('T')[0];
     if(document.getElementById('cad-data')) document.getElementById('cad-data').value = hoje;
     if(document.getElementById('compra-data')) document.getElementById('compra-data').value = hoje;
     if(document.getElementById('venda-data')) document.getElementById('venda-data').value = hoje;
     
-    // Se já tiver uma URL salva, mostra no input de configuração e carrega o dashboard
+    // Se já tiver dados salvos, preenche os inputs e carrega o painel
     if (URL_API) {
         document.getElementById('input-url-api').value = URL_API;
+        if(URL_PLANILHA) document.getElementById('input-url-planilha').value = URL_PLANILHA;
         carregarControleGeral();
     } else {
-        // Se for a primeira vez, simula o clique na aba de configuração
         openTab(null, 'configuracao');
         document.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
         document.querySelector('[onclick*="configuracao"]').classList.add('active');
     }
 });
 
-// Salva ou atualiza a URL da API no navegador do usuário
+// Atualize a função de salvar as configurações
 function salvarConfiguracao(e) {
     if(e) e.preventDefault();
     const urlDigitada = document.getElementById('input-url-api').value.trim();
+    const planilhaDigitada = document.getElementById('input-url-planilha').value.trim();
     
     if (!urlDigitada.startsWith("https://script.google.com/")) {
-        alert("URL inválida! Certifique-se de que colou o link correto do Google Apps Script.");
+        alert("URL de API inválida! Certifique-se de que colou o link correto do Google Apps Script.");
         return;
     }
     
+    // Salva a API e o Link da Planilha na memória local
     localStorage.setItem('CONEXAO_SHEETS_URL', urlDigitada);
-    URL_API = urlDigitada;
-    alert("Configuração salva com sucesso!");
+    localStorage.setItem('LINK_PLANILHA_URL', planilhaDigitada);
     
-    // Redireciona automaticamente para o painel principal
+    URL_API = urlDigitada;
+    URL_PLANILHA = planilhaDigitada;
+    
+    alert("Configurações salvas com sucesso!");
     document.querySelector('[onclick*="dashboard"]').click();
+}
+
+// ADICIONE ESTA NOVA FUNÇÃO NO SEU SCRIPT
+function abrirPlanilhaBancoDeDados() {
+    if (!URL_PLANILHA) {
+        alert("Você ainda não cadastrou o link da sua planilha na aba de Configurações!");
+        // Redireciona para a aba de configurações
+        document.querySelector('[onclick*="configuracao"]').click();
+        return;
+    }
+    // Abre a planilha em uma nova aba do navegador com segurança
+    window.open(URL_PLANILHA, '_blank');
 }
 
 // Carrega a lista de produtos cadastrados nos elementos <select>
