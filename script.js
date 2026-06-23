@@ -110,6 +110,32 @@ function carregarSelectProdutos() {
         .catch(err => console.error("Erro ao carregar produtos:", err));
 }
 
+// Função que busca o preço atual do produto selecionado no catálogo do Sheets
+function atualizarPrecoVendaSugerido() {
+    const produtoSelecionado = document.getElementById('venda-select').value;
+    const inputValor = document.getElementById('venda-valor');
+    
+    if (!produtoSelecionado || !URL_API) {
+        inputValor.value = "";
+        return;
+    }
+    
+    // Faz uma requisição rápida para saber os detalhes dos produtos
+    // Como o nosso doGet padrão retorna o controle geral, vamos fazer uma busca simples no Sheets
+    // Para simplificar e economizar requisições, faremos o Apps Script nos devolver o catálogo atualizado
+    fetch(`${URL_API}?acao=precos_venda`)
+        .then(res => res.json())
+        .then(catalogoPrecos => {
+            const prodMin = produtoSelecionado.trim().toLowerCase();
+            if (catalogoPrecos[prodMin]) {
+                inputValor.value = catalogoPrecos[prodMin];
+            } else {
+                inputValor.value = "";
+            }
+        })
+        .catch(err => console.error("Erro ao buscar preço sugerido:", err));
+}
+
 // Carrega e renderiza a tabela de Controle Geral
 function carregarControleGeral() {
     if(!URL_API) return;
@@ -162,27 +188,45 @@ document.getElementById('form-cadastro').addEventListener('submit', function(e) 
 
 document.getElementById('form-compra').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    const data = document.getElementById('compra-data').value;
+    const produto = document.getElementById('compra-select').value;
+    const qtd = Number(document.getElementById('compra-qtd').value);
+    const valorCompra = Number(document.getElementById('compra-valor').value); // <--- Captura o novo campo
+    const fornecedor = document.getElementById('compra-fornecedor').value.trim();
+
     const payload = {
         aba: "Compras",
         dados: [
-            document.getElementById('compra-data').value,
-            document.getElementById('compra-select').value,
-            Number(document.getElementById('compra-qtd').value)
+            data,          // Coluna B da planilha (pois a coluna A é o ID gerado pelo Script)
+            produto,       // Coluna C
+            qtd,           // Coluna D
+            valorCompra,   // Coluna E (Valor Compra)
+            fornecedor     // Coluna F (Fornecedor)
         ]
     };
+    
     enviarParaSheets(payload, 'form-compra');
 });
 
 document.getElementById('form-venda').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    const data = document.getElementById('venda-data').value;
+    const produto = document.getElementById('venda-select').value;
+    const qtd = Number(document.getElementById('venda-qtd').value);
+    const valorVenda = Number(document.getElementById('venda-valor').value); // <--- Captura o valor da venda
+
     const payload = {
         aba: "Vendas",
         dados: [
-            document.getElementById('venda-data').value,
-            document.getElementById('venda-select').value,
-            Number(document.getElementById('venda-qtd').value)
+            data,       // Coluna A
+            produto,    // Coluna B
+            qtd,        // Coluna C
+            valorVenda  // Coluna D (Novo campo enviado)
         ]
     };
+    
     enviarParaSheets(payload, 'form-venda');
 });
 

@@ -8,7 +8,7 @@
 
     <link rel="icon" type="image/png" href="fogao.png">
     <link rel="apple-touch-icon" href="fogao.png">
-    
+
 </head>
 <body>
 
@@ -112,34 +112,46 @@
             </div>
         </div>
 
-        <!-- TAB 3: Registrar Compra -->
-        <div id="compras" class="tab-content">
-            <header>
-                <h1>Entrada de Mercadoria</h1>
-            </header>
-            <div class="card">
-                <h2>Registrar Lote de Compra (Abastecer Estoque)</h2>
-                <form id="form-compra">
-                    <div class="form-group">
-                        <label for="compra-data">Data da Compra</label>
-                        <input type="date" id="compra-data" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="compra-select">Selecionar Produto</label>
-                        <select id="compra-select" required>
-                            <option value="">Carregando produtos...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="compra-qtd">Quantidade Adquirida</label>
-                        <input type="number" id="compra-qtd" placeholder="Ex: 50" min="1" required>
-                    </div>
-                    <button type="submit" class="btn-submit">Registrar Entrada</button>
-                </form>
-            </div>
-        </div>
+            <!-- TAB 3: Registrar Compra -->
+            <div id="compras" class="tab-content">
 
-        <!-- TAB 4: Registrar Venda -->
+        <header>
+            <h1>Entrada de Mercadoria</h1>
+        </header>
+
+        <div class="card">
+            <h2>Registrar Lote de Compra (Abastecer Estoque)</h2>
+            <form id="form-compra">
+                <div class="form-group">
+                    <label for="compra-data">Data da Compra</label>
+                    <input type="date" id="compra-data" required>
+                </div>
+                <div class="form-group">
+                    <label for="compra-select">Selecionar Produto</label>
+                    <select id="compra-select" required>
+                        <option value="">Carregando produtos...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="compra-qtd">Quantidade Adquirida</label>
+                    <input type="number" id="compra-qtd" placeholder="Ex: 50" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="compra-valor">Valor de Compra Unitário pago neste lote (R$)</label>
+                    <input type="number" step="0.01" id="compra-valor" placeholder="Ex: 50.00" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="compra-fornecedor">Fornecedor</label>
+                    <input type="text" id="compra-fornecedor" placeholder="Ex: Ultragaz, Nacional Gás..." required>
+                </div>
+                
+                <button type="submit" class="btn-submit">Registrar Entrada</button>
+            </form>
+        </div>
+    </div>
+            <!-- TAB 4: Registrar Venda -->
         <div id="vendas" class="tab-content">
             <header>
                 <h1>Saída de Mercadoria</h1>
@@ -153,7 +165,7 @@
                     </div>
                     <div class="form-group">
                         <label for="venda-select">Selecionar Produto</label>
-                        <select id="venda-select" required>
+                        <select id="venda-select" onchange="atualizarPrecoVendaSugerido()" required>
                             <option value="">Carregando produtos...</option>
                         </select>
                     </div>
@@ -161,11 +173,16 @@
                         <label for="venda-qtd">Quantidade Vendida</label>
                         <input type="number" id="venda-qtd" placeholder="Ex: 5" min="1" required>
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="venda-valor">Valor de Venda Unitário (R$)</label>
+                        <input type="number" step="0.01" id="venda-valor" placeholder="0.00" required>
+                    </div>
+                    
                     <button type="submit" class="btn-submit">Confirmar Venda</button>
                 </form>
             </div>
         </div>
-
     </div>
 
     <script src="script.js"></script>
