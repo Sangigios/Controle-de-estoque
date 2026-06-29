@@ -1,4 +1,244 @@
-let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Controle de Estoque</title>
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="icon" type="image/png" href="fogao.png">
+    <link rel="apple-touch-icon" href="fogao.png">
+
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Estoque Pro</h2>
+        <button class="tab-link active" onclick="openTab(event, 'dashboard')">📊 Painel</button>
+        <button class="tab-link" onclick="openTab(event, 'cadastro')">📦 Cadastrar</button>
+        <button class="tab-link" onclick="openTab(event, 'compras')">📥 Compra</button>
+        <button class="tab-link" onclick="openTab(event, 'vendas')">📤 Venda</button>
+        <button class="tab-link" onclick="openTab(event, 'fiados')">⚠️ Fiados</button>
+        <button class="tab-link" onclick="openTab(event, 'configuracao')" style="margin-top: auto; background-color: #334155; color: #38bdf8;">⚙️ Config</button>
+        <button onclick="abrirPlanilhaBancoDeDados()" style="background-color: #15803d; color: #fff; font-weight: 600;">🟢 Ver Planilha</button>
+    </div>
+
+    <div class="main-content">
+
+        <div id="configuracao" class="tab-content">
+            <header>
+                <h1>Configuração do Banco de Dados</h1>
+            </header>
+            <div class="card">
+                <h2>Vincular Google Sheets</h2>
+                <p style="font-size: 14px; color: #64748b; margin-bottom: 15px;">
+                    Insira abaixo os links correspondentes para o funcionamento do seu painel e acesso rápido.
+                </p>
+                <form onsubmit="salvarConfiguracao(event)">
+                    <div class="form-group">
+                        <label for="input-url-api">URL do Web App (Google Script)</label>
+                        <input type="text" id="input-url-api" placeholder="https://script.google.com/macros/s/.../exec" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-url-planilha">URL Direta da Planilha do Google</label>
+                        <input type="text" id="input-url-planilha" placeholder="https://docs.google.com/spreadsheets/d/.../edit">
+                    </div>
+                    <button type="submit" class="btn-submit" style="background-color: #10b981;">Salvar Configurações</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="dashboard" class="tab-content active">
+            <header>
+                <h1>Controle Geral de Estoque e Lucros</h1>
+            </header>
+            <div class="card card-wide">
+                <h2>Dados em Tempo Real (Google Sheets)</h2>
+                <div class="table-responsive">
+                    <table id="table-controle">
+                        <thead>
+                            幕
+                            <tr>
+                                <th>Última Atualização</th>
+                                <th>Produto</th>
+                                <th>Estoque Atual</th>
+                                <th>Venda Diária</th>
+                                <th>Lucro Diário</th>
+                                <th>Venda no Mês</th>
+                                <th>Lucro no Mês</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-controle">
+                            <tr>
+                                <td colspan="7" class="loading-text">Clique em carregar ou aguarde a sincronização...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn-submit" style="margin-top: 15px; background-color: #475569;" onclick="carregarControleGeral()">Atualizar Tabela</button>
+            </div>
+        </div>
+
+        <div id="cadastro" class="tab-content">
+            <header>
+                <h1>Configurações de Produto</h1>
+            </header>
+            <div class="card">
+                <h2>Cadastrar Novo Produto no Catálogo</h2>
+                <form id="form-cadastro">
+                    <div class="form-group">
+                        <label for="cad-data">Data de Registro</label>
+                        <input type="date" id="cad-data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cad-produto">Nome do Produto</label>
+                        <input type="text" id="cad-produto" placeholder="Ex: Camiseta Branca M" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cad-valor-compra">Preço de Custo / Compra (R$)</label>
+                        <input type="number" step="0.01" id="cad-valor-compra" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cad-valor-venda">Preço Base de Venda (R$)</label>
+                        <input type="number" step="0.01" id="cad-valor-venda" placeholder="0.00" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Salvar Produto</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="compras" class="tab-content">
+            <header>
+                <h1>Entrada de Mercadoria</h1>
+            </header>
+            <div class="card">
+                <h2>Registrar Lote de Compra (Abastecer Estoque)</h2>
+                <form id="form-compra">
+                    <div class="form-group">
+                        <label for="compra-data">Data da Compra</label>
+                        <input type="date" id="compra-data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-select">Selecionar Produto</label>
+                        <select id="compra-select" required>
+                            <option value="">Carregando produtos...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-qtd">Quantidade Adquirida</label>
+                        <input type="number" id="compra-qtd" placeholder="Ex: 50" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-valor">Valor de Compra Unitário pago neste lote (R$)</label>
+                        <input type="number" step="0.01" id="compra-valor" placeholder="Ex: 50.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="compra-fornecedor">Fornecedor</label>
+                        <input type="text" id="compra-fornecedor" placeholder="Ex: Ultragaz, Nacional Gás..." required>
+                    </div>
+                    <button type="submit" class="btn-submit">Registrar Entrada</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="vendas" class="tab-content">
+            <header>
+                <h1>Saída de Mercadoria</h1>
+            </header>
+            <div class="card">
+                <h2>Registrar Nova Venda</h2>
+                <form id="form-venda">
+                    <div class="form-group">
+                        <label for="venda-data">Data da Venda</label>
+                        <input type="date" id="venda-data" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="venda-select">Selecionar Produto</label>
+                        <select id="venda-select" onchange="atualizarPrecoVendaSugerido('venda-select', 'venda-valor')" required>
+                            <option value="">Carregando produtos...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="venda-qtd">Quantidade Vendida</label>
+                        <input type="number" id="venda-qtd" placeholder="Ex: 5" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="venda-valor">Valor de Venda Unitário (R$)</label>
+                        <input type="number" step="0.01" id="venda-valor" placeholder="0.00" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Confirmar Venda</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="fiados" class="tab-content">
+            <header>
+                <h1>Caderno de Fiados</h1>
+            </header>
+            <div class="card">
+                <h2>Lançar Novo Fiado</h2>
+                <form id="form-fiado">
+                    <div class="form-group">
+                        <label for="fiado-data-compra">Data da Compra</label>
+                        <input type="date" id="fiado-data-compra" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fiado-cliente">Nome do Cliente</label>
+                        <input type="text" id="fiado-cliente" placeholder="Ex: João da Silva" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fiado-select">Selecionar Produto</label>
+                        <select id="fiado-select" onchange="atualizarPrecoVendaSugerido('fiado-select', 'fiado-valor')" required>
+                            <option value="">Carregando produtos...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fiado-qtd">Quantidade</label>
+                        <input type="number" id="fiado-qtd" placeholder="Ex: 1" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fiado-valor">Valor do Produto (Unitário R$)</label>
+                        <input type="number" step="0.01" id="fiado-valor" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fiado-previsao">Previsão de Pagamento</label>
+                        <input type="date" id="fiado-previsao" required>
+                    </div>
+                    <button type="submit" class="btn-submit" style="background-color: #e25c00;">Salvar Fiado</button>
+                </form>
+            </div>
+
+            <div class="card card-wide">
+                <h2>Lista de Fiados Cadastrados</h2>
+                <div class="table-responsive">
+                    <table id="table-fiados">
+                        <thead>
+                            <tr>
+                                <!--<th>ID</th>-->
+                                <th>Data Compra</th>
+                                <th>Cliente</th>
+                                <th>Produto (Qtd)</th>
+                                <th>Valor Total</th>
+                                <th>Previsão Pgto</th>
+                                <th>Data Pgto</th>
+                                <th>Status</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-fiados">
+                            <tr>
+                                <td colspan="9" class="loading-text">Carregando fiados...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
         let URL_PLANILHA = localStorage.getItem('LINK_PLANILHA_URL') || "";
 
         function openTab(evt, tabName) {
@@ -351,3 +591,6 @@ function carregarTabelaFiados() {
                 alert('Falha na comunicação com o Google Sheets.');
             });
         }
+    </script>
+</body>
+</html>
