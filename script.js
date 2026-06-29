@@ -156,17 +156,17 @@ let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
                 });
         }
 
-        // Nova função para buscar os dados de fiados salvos na planilha
-        /*function carregarTabelaFiados() {
+        // Função para buscar os dados de fiados salvos na planilha
+        function carregarTabelaFiados() {
             if(!URL_API) return;
             const tbody = document.getElementById('tbody-fiados');
-            tbody.innerHTML = '<tr><td colspan="9" class="loading-text">Buscando caderno de fiados...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="loading-text">Buscando caderno de fiados...</td></tr>'; // Ajustado para 8
 
             fetch(`${URL_API}?acao=listar_fiados`)
                 .then(res => res.json())
                 .then(fiados => {
                     if(fiados.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="9" class="loading-text">Nenhum fiado pendente ou registrado.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="8" class="loading-text">Nenhum fiado pendente ou registrado.</td></tr>'; // Ajustado para 8
                         return;
                     }
 
@@ -176,8 +176,8 @@ let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
                         const badgeClass = isPago ? 'badge-pago' : 'badge-pendente';
                         const acaoBotao = isPago ? '---' : `<button class="btn-action" onclick="quitarFiadoNoSheets('${f.id}')">Dar Baixa</button>`;
                         
+                        // O ID continua sendo usado no botão "Dar Baixa", mas não aparece mais na linha
                         html += `<tr>
-                            <td>${f.id}</td>
                             <td>${f.dataCompra}</td>
                             <td>${f.cliente}</td>
                             <td>${f.produto} (${f.qtd})</td>
@@ -192,49 +192,9 @@ let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
                 })
                 .catch(err => {
                     console.error(err);
-                    tbody.innerHTML = '<tr><td colspan="9" class="loading-text" style="color:red;">Erro ao carregar os fiados do Sheets.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="loading-text" style="color:red;">Erro ao carregar os fiados do Sheets.</td></tr>'; // Ajustado para 8
                 });
-        }*/
-
-        // Função para buscar os dados de fiados salvos na planilha
-function carregarTabelaFiados() {
-    if(!URL_API) return;
-    const tbody = document.getElementById('tbody-fiados');
-    tbody.innerHTML = '<tr><td colspan="8" class="loading-text">Buscando caderno de fiados...</td></tr>'; // Ajustado para 8
-
-    fetch(`${URL_API}?acao=listar_fiados`)
-        .then(res => res.json())
-        .then(fiados => {
-            if(fiados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="loading-text">Nenhum fiado pendente ou registrado.</td></tr>'; // Ajustado para 8
-                return;
-            }
-
-            let html = '';
-            fiados.forEach(f => {
-                const isPago = f.status.toLowerCase() === 'pago';
-                const badgeClass = isPago ? 'badge-pago' : 'badge-pendente';
-                const acaoBotao = isPago ? '---' : `<button class="btn-action" onclick="quitarFiadoNoSheets('${f.id}')">Dar Baixa</button>`;
-                
-                // O ID continua sendo usado no botão "Dar Baixa", mas não aparece mais na linha
-                html += `<tr>
-                    <td>${f.dataCompra}</td>
-                    <td>${f.cliente}</td>
-                    <td>${f.produto} (${f.qtd})</td>
-                    <td>R$ ${Number(f.valorTotal).toFixed(2)}</td>
-                    <td>${f.previsaoPgto}</td>
-                    <td>${f.dataPgto || '---'}</td>
-                    <td><span class="badge ${badgeClass}">${f.status}</span></td>
-                    <td>${acaoBotao}</td>
-                </tr>`;
-            });
-            tbody.innerHTML = html;
-        })
-        .catch(err => {
-            console.error(err);
-            tbody.innerHTML = '<tr><td colspan="8" class="loading-text" style="color:red;">Erro ao carregar os fiados do Sheets.</td></tr>'; // Ajustado para 8
-        });
-}
+        }
 
         // Executa a quitação de uma conta de fiado diretamente na API
         function quitarFiadoNoSheets(idFiado) {
