@@ -1,4 +1,4 @@
- * {
+  * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -268,3 +268,16 @@
                 font-size: 12px;
             }
         }
+
+        /* Se o texto do badge for VENCIDO, ele ganha uma cor de atenção */
+.badge-pendente { 
+    background-color: #fef3c7; 
+    color: #d97706; 
+}
+
+/* Nova regra visual para o texto de vencidos */
+td:has(.badge) span:contains('VENCIDO'), 
+.badge:contains('VENCIDO') { 
+    background-color: #fee2e2 !important; 
+    color: #dc2626 !important; 
+}

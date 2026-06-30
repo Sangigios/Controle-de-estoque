@@ -1,5 +1,5 @@
 let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
-        let URL_PLANILHA = localStorage.getItem('LINK_PLANILHA_URL') || "";
+let URL_PLANILHA = localStorage.getItem('LINK_PLANILHA_URL') || "";
 
         function openTab(evt, tabName) {
             if (!URL_API && tabName !== 'configuracao') {
@@ -41,6 +41,10 @@ let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
             if (URL_API) {
                 document.getElementById('input-url-api').value = URL_API;
                 if(URL_PLANILHA) document.getElementById('input-url-planilha').value = URL_PLANILHA;
+                
+                // CARREGA OS FIADOS LOGO AO ENTRAR PARA DISPARAR O ALERTA DE VENCIMENTO
+                carregarTabelaFiados(true); 
+                
                 carregarControleGeral();
             } else {
                 openTab(null, 'configuracao');
@@ -156,27 +160,44 @@ let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
                 });
         }
 
-        // Função para buscar os dados de fiados salvos na planilha
-        function carregarTabelaFiados() {
+        // Adicionamos o parâmetro dispararAlerta (que começa como falso por padrão)
+        function carregarTabelaFiados(dispararAlerta = false) {
             if(!URL_API) return;
             const tbody = document.getElementById('tbody-fiados');
-            tbody.innerHTML = '<tr><td colspan="8" class="loading-text">Buscando caderno de fiados...</td></tr>'; // Ajustado para 8
+            tbody.innerHTML = '<tr><td colspan="8" class="loading-text">Buscando caderno de fiados...</td></tr>';
 
             fetch(`${URL_API}?acao=listar_fiados`)
                 .then(res => res.json())
                 .then(fiados => {
                     if(fiados.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" class="loading-text">Nenhum fiado pendente ou registrado.</td></tr>'; // Ajustado para 8
+                        tbody.innerHTML = '<tr><td colspan="8" class="loading-text">Nenhum fiado pendente ou registrado.</td></tr>';
                         return;
                     }
 
                     let html = '';
+                    let clientesVencidos = [];
+
+                    const hojeData = new Date();
+                    const hojeStr = `${hojeData.getFullYear()}-${String(hojeData.getMonth() + 1).padStart(2, '0')}-${String(hojeData.getDate()).padStart(2, '0')}`;
+
                     fiados.forEach(f => {
                         const isPago = f.status.toLowerCase() === 'pago';
-                        const badgeClass = isPago ? 'badge-pago' : 'badge-pendente';
+                        let badgeClass = isPago ? 'badge-pago' : 'badge-pendente';
+                        let statusTexto = f.status;
+
+                        if (!isPago && f.previsaoPgto) {
+                            const partes = f.previsaoPgto.split('/');
+                            const dataPrevisaoFormatada = `${partes[2]}-${partes[1]}-${partes[0]}`;
+
+                            if (dataPrevisaoFormatada <= hojeStr) {
+                                badgeClass = 'badge-vencido'; // Usa a classe de atenção vermelha
+                                statusTexto = '⚠️ VENCIDO';
+                                clientesVencidos.push(`${f.cliente} (Venceu em: ${f.previsaoPgto})`);
+                            }
+                        }
+
                         const acaoBotao = isPago ? '---' : `<button class="btn-action" onclick="quitarFiadoNoSheets('${f.id}')">Dar Baixa</button>`;
                         
-                        // O ID continua sendo usado no botão "Dar Baixa", mas não aparece mais na linha
                         html += `<tr>
                             <td>${f.dataCompra}</td>
                             <td>${f.cliente}</td>
@@ -184,17 +205,26 @@ let URL_API = localStorage.getItem('CONEXAO_SHEETS_URL') || "";
                             <td>R$ ${Number(f.valorTotal).toFixed(2)}</td>
                             <td>${f.previsaoPgto}</td>
                             <td>${f.dataPgto || '---'}</td>
-                            <td><span class="badge ${badgeClass}">${f.status}</span></td>
+                            <td><span class="badge ${badgeClass}">${statusTexto}</span></td>
                             <td>${acaoBotao}</td>
                         </tr>`;
                     });
+                    
                     tbody.innerHTML = html;
+
+                    // O alerta SÓ vai disparar se o parâmetro dispararAlerta for VERDADEIRO
+                    if (dispararAlerta && clientesVencidos.length > 0) {
+                        setTimeout(() => {
+                            alert("🚨 ATENÇÃO! O sistema identificou fiados vencidos:\n\n" + clientesVencidos.join("\n"));
+                        }, 800); // Dá um tempo para a tela inicial desenhar o painel de fundo
+                    }
                 })
                 .catch(err => {
                     console.error(err);
-                    tbody.innerHTML = '<tr><td colspan="8" class="loading-text" style="color:red;">Erro ao carregar os fiados do Sheets.</td></tr>'; // Ajustado para 8
+                    tbody.innerHTML = '<tr><td colspan="8" class="loading-text" style="color:red;">Erro ao carregar os fiados do Sheets.</td></tr>';
                 });
         }
+
 
         // Executa a quitação de uma conta de fiado diretamente na API
         function quitarFiadoNoSheets(idFiado) {
